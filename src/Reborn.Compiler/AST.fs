@@ -5,6 +5,13 @@
 type Identifier = string
 type Param = Identifier
 
+// TODO: other literals
+// * list
+// * hashmap
+// * regex
+// * datetime
+// * path / url
+
 type Literal =
     | LitString of string
     | LitInt of int
