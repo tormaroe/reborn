@@ -2,6 +2,7 @@
 
 open System
 open System.CodeDom
+open Reborn.AST
 
 let createCSharpProvider () =
     CodeDom.Compiler.CodeDomProvider.CreateProvider "c#"
@@ -14,7 +15,8 @@ let getCompilerParams () =
     //``params``.MainClass = ""
     ``params``.OutputAssembly <- ".\\test.exe"
     //``params``.ReferencedAssemblies.Add ""
-    ``params``.TreatWarningsAsErrors <- true
+    ``params``.TreatWarningsAsErrors <- false
+    ``params``.IncludeDebugInformation <- true
     //``params``.CompilerOptions <- "" // commandline arguments
     ``params``
 
@@ -62,3 +64,82 @@ let returntype (t:string) (m:CodeMemberMethod) =
 let attributes (a:MemberAttributes) (m:CodeMemberMethod) =
     m.Attributes <- a
     m
+
+let body statements (m:CodeMemberMethod) =
+    m.Statements.AddRange( Array.ofList statements )
+    m
+
+let parameters ps (m:CodeMemberMethod) =
+    m.Parameters.AddRange( Array.ofList ps )
+    m
+
+let makeParameter name =
+    CodeParameterDeclarationExpression("System.Object", name)
+
+let rec expression2dom e : CodeExpression = 
+    match e with
+    | Value (LitBool b)         -> upcast CodePrimitiveExpression(b) 
+    | Value (LitFloat f)        -> upcast CodePrimitiveExpression(f)
+    | Value (LitInt i)          -> upcast CodePrimitiveExpression(i)
+    | Value (LitString s)       -> upcast CodePrimitiveExpression(s)
+    | Variable identifier       -> upcast CodeVariableReferenceExpression(identifier)
+    | Application (id, args)    -> upcast (makeCallExpression id args)
+    
+and makeCallExpression identifier args =
+    let args = args |> List.map expression2dom |> Array.ofList
+    CodeMethodInvokeExpression(null, identifier, args)
+    
+let statement2dom s : CodeStatement = 
+    match s with
+    | Return expr -> 
+        upcast (CodeMethodReturnStatement (expression2dom expr))
+    | Call (a, b) ->
+        let expr = Application (a, b) |> expression2dom
+        upcast CodeExpressionStatement(expr)
+    | Assignment (identifier, initExpr) ->
+        let initExprDom = expression2dom initExpr
+        upcast (CodeVariableDeclarationStatement("System.Object", identifier, initExprDom))
+
+let hasNoReturn statements =
+    match Seq.last statements with
+    | Return _ -> false
+    | _ -> true
+
+// Move to "validation" module
+let addMissingReturn (statements: Statement list) =
+    if (List.length statements) = 0 || (hasNoReturn statements)
+    then [Return (Value (LitBool true))] |> List.append statements 
+    else statements
+
+    
+let declaration2dom d : CodeTypeMember =
+    match d with
+    | Function (identifier, parms, statements) ->
+        ``method`` identifier
+        |> returntype "System.Object"
+        |> attributes publicStatic
+        |> parameters (parms |> List.map makeParameter)
+        |> body (statements 
+                |> addMissingReturn
+                |> List.map statement2dom)
+        :> CodeTypeMember
+
+let makeMain () =
+    ``method`` "Main"
+    |> returntype "System.Void"
+    |> attributes publicStatic
+    |> parameters [CodeParameterDeclarationExpression("params System.String[]", "args")]
+    |> body ([(Call ("run", []))] |> List.map statement2dom)
+    :> CodeDom.CodeTypeMember
+
+let addMain ast = (makeMain ()) :: ast
+
+
+let compileUnitsFromAST ast =
+    let (|..>) e f = f [e]
+    ast |> List.map declaration2dom
+        |> addMain
+        |> wrapInClass "Module" nonPublic
+        |..> wrapInNamespace "Rebol"
+        |..> wrapInCompileUnit
+        |> Array.create 1

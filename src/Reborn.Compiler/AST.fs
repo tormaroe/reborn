@@ -21,13 +21,28 @@ type Literal =
 type Expr =
     | Value of Literal
     | Variable of Identifier
-    | Lambda of Param list * Expr list
     | Application of Identifier * Arg list
+    | If of Expr * Expr * Expr       // ? e1 e2 e3
 
 and Arg = Expr
 
 type Statement =
-    | Assignment of Identifier * Expr
-    | ExpressionStatement of Expr
+    | Assignment of Identifier * Expr   // 123 => x
+    | Call of Identifier * Arg list     // [f 1 2 3]
+    | Return of Expr                    // [f 1 2] is expr
+    | While of Expr * Statement list    // << exp s1 s2 s3 >>
+
+(*
+[run] is [bar 2]
+[bar x] is y when [
+  [inc x] => x2
+  [foo x x2] => y
+  [println "foo % % => %" x x2 y]
+]
+[foo a b] is [+ a [* b 2]]
+*)
+type Declaration =
+    // ADD RETURN EXPRESSION TO FUNCTION DECL. ??
+    | Function of Identifier * Param list * Statement list
 
 type Program = Statement list

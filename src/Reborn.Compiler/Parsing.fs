@@ -79,9 +79,9 @@ opp.TermParser <- term
 let passignment = pidentifier .>> ws .>> str_ws "=" .>>. pexpr
                   |>> Assignment
 
-let pexpressionstatement = pexpr |>> ExpressionStatement
+//let pexpressionstatement = pexpr |>> ExpressionStatement
 
-let pstatement = passignment <|> pexpressionstatement
+let pstatement = passignment //<|> pexpressionstatement
 
 (* Program *)
 

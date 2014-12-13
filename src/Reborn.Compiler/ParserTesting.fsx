@@ -35,4 +35,4 @@ test passignment "foo = bar"
 
 // TODO: comments does not work
 
-test pprogram " 1 \"foo\"  foo = true\nfalse"
+test pprogram " 1 \"foo\"  foo = true"
