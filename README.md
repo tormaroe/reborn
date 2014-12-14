@@ -4,6 +4,7 @@ This is a language project just for fun anf for gaining experience with language
 
 Some details:
 
+* Inspired by Rebol, Lisp, and functional programming, but probably does not really look like anything you will have seen before
 * Compiler implemented in F#
 * FParsec is used for parsing source code
 * System.CodeDom (C# provider) is used for generating target code
