@@ -1,6 +1,6 @@
 **Reborn** is a programming language and the .NET compiler for that language.
 
-This is a language project just for fun anf for gaining experience with language and compiler construction, and the result is not intended for any kind of production use.
+This is a language project just for fun and for gaining experience with language and compiler construction. The result is not intended for any kind of production use.
 
 Some details:
 
