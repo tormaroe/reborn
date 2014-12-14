@@ -1,5 +1,7 @@
 **Reborn** is a programming language and the .NET compiler for that language.
 
+Current state: *Inception phase (and a bit of a mess)*
+
 This is a language project just for fun and for gaining experience with language and compiler construction. The result is not intended for any kind of production use.
 
 Some details:
