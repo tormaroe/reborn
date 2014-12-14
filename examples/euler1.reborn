@@ -1,0 +1,18 @@
+
+[multiple-of d x] is [zero [% x d]]
+
+[multiple-3-or-5 x] is [or [multiple-of 3 x] [multiple-of 5 y]]
+
+[multiples from to] is sum when [
+  0 => sum
+  << [lte from to]
+     ?? [multiple-3-or-5 from]
+        [+ sum from] => sum
+     [inc from] => from
+  >>
+]
+
+[euler1 from to] is [println "Multiples of 3 or 5 from _ to _ is _" 
+                             from to [multiples from to]]
+
+[run] is [euler1 1 999]
